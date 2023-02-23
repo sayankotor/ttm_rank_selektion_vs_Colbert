@@ -29,6 +29,11 @@ class Arguments():
 
         # Filtering-related Arguments
         self.add_argument('--mask-punctuation', dest='mask_punctuation', default=False, action='store_true')
+        
+        # Compresssion Arguments
+        self.add_argument('--is_compressed', dest='is_compressed', default=False, action='store_true')
+        self.add_argument('--compressed_type', dest='compressed_type', default='ttm', type=str)
+        self.add_argument('--c_rank', dest='c_rank', default=90, type=int)
 
     def add_model_training_parameters(self):
         # NOTE: Providing a checkpoint is one thing, --resume is another, --resume_optimizer is yet another.

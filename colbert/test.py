@@ -26,16 +26,23 @@ def main():
     with Run.context():
         args.colbert, args.checkpoint = load_colbert(args)
         args.qrels = load_qrels(args.qrels)
+        
+        print ("args qrels", len(args.qrels))
 
         if args.collection or args.queries:
             assert args.collection and args.queries
 
             args.queries = load_queries(args.queries)
             args.collection = load_collection(args.collection)
-            args.topK_pids, args.qrels = load_topK_pids(args.topK, args.qrels)
+            print ("args queries", len(args.queries))
+            #args.topK_pids, args.qrels = load_topK_pids(args.topK, args.qrels)
+            args.queries, args.topK_docs, args.topK_pids = load_topK(args.topK)
+            print ("args qrels 2", len(args.qrels))
+            print ("args.topK_pids", len(args.topK_pids))
 
         else:
             args.queries, args.topK_docs, args.topK_pids = load_topK(args.topK)
+            print ("args topk", len((args.topK)))
 
         assert (not args.shortcircuit) or args.qrels, \
             "Short-circuiting (i.e., applying minimal computation to queries with no positives in the re-ranked set) " \

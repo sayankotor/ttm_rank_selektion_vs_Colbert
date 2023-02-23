@@ -6,6 +6,37 @@ import itertools
 
 from multiprocessing import Pool
 from collections import OrderedDict, defaultdict
+import numpy as np
+
+import torch
+from torch import nn
+
+def factorize_to_svd(fc_w, fc_b, rank, device = 'cpu'):
+    U, S, Vt = np.linalg.svd(fc_w, full_matrices=False)
+
+
+    # truncate SVD and fuse Sigma matrix
+    w1 = np.dot(np.diag(np.sqrt(S[0:rank])),Vt[0:rank, :])
+    w2 = np.dot(U[:, 0:rank], np.diag(np.sqrt(S[0:rank])))
+
+    # create new layers and insert weights
+    out_features, in_features = fc_w.shape
+
+    linear1 = nn.Linear(in_features = in_features, 
+                          out_features = rank,
+                          bias = False)
+    linear1.weight = nn.Parameter(torch.FloatTensor(w1))
+
+    linear2 = nn.Linear(in_features = rank,
+                          out_features = out_features,
+                          bias=True)
+    linear2.weight = nn.Parameter(torch.FloatTensor(w2))
+    linear2.bias = nn.Parameter(torch.FloatTensor(fc_b))
+
+    # create factorized layer
+    factorized_layer = nn.Sequential(linear1, linear2)
+    
+    return factorized_layer
 
 
 def print_message(*s, condition=True):

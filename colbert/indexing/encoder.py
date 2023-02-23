@@ -50,6 +50,8 @@ class CollectionEncoder():
 
     def _load_model(self):
         self.colbert, self.checkpoint = load_colbert(self.args, do_print=(self.process_idx == 0))
+        print ("number of parameter in colbert")
+        print(sum(p.numel() for p in self.colbert.parameters()))
         self.colbert = self.colbert.cuda()
         self.colbert.eval()
 

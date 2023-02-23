@@ -103,6 +103,8 @@ def evaluate_recall(qrels, queries, topK_pids):
     if qrels is None:
         return
 
+    
+    print (len(set(qrels.keys())), len(set(queries.keys())))
     assert set(qrels.keys()) == set(queries.keys())
     recall_at_k = [len(set.intersection(set(qrels[qid]), set(topK_pids[qid]))) / max(1.0, len(qrels[qid]))
                    for qid in qrels]

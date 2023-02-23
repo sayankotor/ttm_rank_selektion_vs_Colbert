@@ -8,7 +8,7 @@ from collections import defaultdict, OrderedDict
 from colbert.parameters import DEVICE
 from colbert.modeling.colbert import ColBERT
 from colbert.utils.utils import print_message, load_checkpoint
-from colbert.evaluation.load_model import load_model
+from colbert.evaluation.load_model import load_model, load_compressed_model
 from colbert.utils.runs import Run
 
 
@@ -98,21 +98,27 @@ def load_topK_pids(topK_path, qrels):
         for line_idx, line in enumerate(f):
             if line_idx and line_idx % (10*1000*1000) == 0:
                 print(line_idx, end=' ', flush=True)
+                print ("line.strip().split('\t')", line.strip().split('\t'), end='\n', flush=True)
 
             qid, pid, *rest = line.strip().split('\t')
             qid, pid = int(qid), int(pid)
-
+            
             topK_pids[qid].append(pid)
 
             assert len(rest) in [1, 2, 3]
+            try:
+                if len(rest) > 1:
+                    *_, label = rest
+                    label = int(label)
+                    assert label in [0, 1]
 
-            if len(rest) > 1:
-                *_, label = rest
-                label = int(label)
-                assert label in [0, 1]
-
-                if label >= 1:
-                    topK_positives[qid].append(pid)
+                    if label >= 1:
+                        topK_positives[qid].append(pid)
+            except:
+                print ("line idx, line", line_idx, line)
+                print ("rest", rest)
+                print ("label", label)
+                break
 
         print()
 
@@ -175,7 +181,12 @@ def load_collection(collection_path):
 
 
 def load_colbert(args, do_print=True):
-    colbert, checkpoint = load_model(args, do_print)
+    print (args)
+    if (args.is_compressed):
+        print ("compressed version")
+        colbert, checkpoint = load_compressed_model(args, do_print)
+    else:
+        colbert, checkpoint = load_model(args, do_print)
 
     # TODO: If the parameters below were not specified on the command line, their *checkpoint* values should be used.
     # I.e., not their purely (i.e., training) default values.

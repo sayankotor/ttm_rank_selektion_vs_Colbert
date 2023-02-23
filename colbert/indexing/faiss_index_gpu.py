@@ -23,7 +23,7 @@ class FaissIndexGPU():
         self.tempmem = 1 << 33
         self.max_add_per_gpu = 1 << 25
         self.max_add = self.max_add_per_gpu * self.ngpu
-        self.add_batch_size = 65536
+        self.add_batch_size = 655
 
         self.gpu_resources = self._prepare_gpu_resources()
 

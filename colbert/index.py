@@ -20,8 +20,9 @@ def main():
     parser.add_indexing_input()
 
     parser.add_argument('--chunksize', dest='chunksize', default=6.0, required=False, type=float)   # in GiBs
-
     args = parser.parse()
+    
+    print (args)
 
     with Run.context():
         args.index_path = os.path.join(args.index_root, args.index_name)
