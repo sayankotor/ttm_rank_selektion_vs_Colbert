@@ -12,8 +12,8 @@ import torch as T
 from opt_einsum import contract_expression
 from opt_einsum.contract import ContractExpression
 
-from linalg import ttd
-from functional import compressed_linear_svd
+from .linalg_tt import ttd
+from .functional import compressed_linear_svd
 import numpy as np
 
 __all__ = ('CompressedLinear', 'SVDCompressedLinear', 'TTCompressedLinear')

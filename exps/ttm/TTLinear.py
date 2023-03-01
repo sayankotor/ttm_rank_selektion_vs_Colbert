@@ -29,12 +29,13 @@ class TTLinear(nn.Module):
             init_fisher[i, i] = 1.0
 
         
-        self.weight = TTMatrix(init, list(ranks), input_dims, output_dims)
+        weight = TTMatrix(init, list(ranks), input_dims, output_dims)
 
         # torch doesn't recognize attributes of self.weight as parameters,
         # so we have to use ParameterList
-        self.cores = nn.ParameterList([nn.Parameter(core) for core in self.weight.cores])
-        self.weight.cores = self.cores
+        self.cores = nn.ParameterList([nn.Parameter(core) for core in weight.cores])
+        
+        #self.bias = nn.Parameter(torch.zeros(out_features)) if bias is not None else None
 
 
         if bias:
@@ -56,16 +57,19 @@ class TTLinear(nn.Module):
 
         return res
 
-    def set_weight(self, new_weights: torch.Tensor):
+    def set_weight(self, new_weights: torch.Tensor, need_singular_values: bool):
         # in regular linear layer weights are transposed, so we transpose back
         new_weights = new_weights.clone().detach().T
 
         shape = torch.Size((self.in_features, self.out_features))
         assert new_weights.shape == shape, f"Expected shape {shape}, got {new_weights.shape}"
 
-        self.weight = TTMatrix(new_weights, self.ranks, self.input_dims, self.output_dims, is_from_weight = True)
-        self.cores = nn.ParameterList([nn.Parameter(core) for core in self.weight.cores])
-        self.weight.cores = self.cores
+        weight = TTMatrix(new_weights, self.ranks, self.input_dims, self.output_dims, is_from_weight = need_singular_values)
+        self.cores = nn.ParameterList([nn.Parameter(core) for core in weight.cores])
+        weight.cores = self.cores
+        
+    def set_bias(self, new_bias:torch.Tensor):
+        self.bias = new_bias
         
     def set_weight_with_fisher(self, new_weights: torch.Tensor, fisher_matrix: torch.Tensor):
         # in regular linear layer weights are transposed, so we transpose back
@@ -75,9 +79,9 @@ class TTLinear(nn.Module):
         shape = torch.Size((self.in_features, self.out_features))
         assert new_weights.shape == shape, f"Expected shape {shape}, got {new_weights.shape}"
 
-        self.weight = TTMatrix(new_weights, fisher_matrix, self.ranks, self.input_dims, self.output_dims)
-        self.cores = nn.ParameterList([nn.Parameter(core) for core in self.weight.cores])
-        self.weight.cores = self.cores
+        weight = TTMatrix(new_weights, fisher_matrix, self.ranks, self.input_dims, self.output_dims)
+        self.cores = nn.ParameterList([nn.Parameter(core) for core in weight.cores])
+        weight.cores = self.cores
 
     def set_from_linear(self, linear: nn.Linear):
         self.set_weight_with_fisher(linear.weight.data, torch.diag(torch.ones(linear.weight.data.shape)))

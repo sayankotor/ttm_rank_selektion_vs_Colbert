@@ -184,7 +184,6 @@ class CustomTensor(object):
         
 
         if isinstance(data, (list, tuple)):
-            print ("if")
             if batch:
                 min_dim = 3
                 max_dim = 4
@@ -204,7 +203,6 @@ class CustomTensor(object):
             self.cores = data
             N = len(data)
         else:
-            print ("else")
             if isinstance(data, np.ndarray):
                 data = torch.tensor(data, device=device)
             elif isinstance(data, torch.Tensor):
@@ -212,7 +210,6 @@ class CustomTensor(object):
             else:
                 raise ValueError('A tntorch.Tensor may be built either from a list of cores, one NumPy ndarray, or one PyTorch tensor')
             N = data.dim()
-            print ("N", N)
         if Us is None:
             Us = [None] * N
         self.Us = Us
@@ -334,7 +331,6 @@ class CustomTensor(object):
                 if (is_from_weight):
                     self.s_values = get_singular_values(data, batch)
                 self.cores = _full_rank_tt(data, batch)
-                print ("len cores0", len(self.cores))
                 
                 self.Us = [None] * self.dim()
 
@@ -343,7 +339,6 @@ class CustomTensor(object):
                 if ranks_tt is not None:
                     self.round_tt(rmax=ranks_tt, algorithm=algorithm)#ttd(data, [1] + ranks_tt +[1])#self.round_tt(rmax=ranks_tt, algorithm=algorithm)
         
-        print ("len cores", len(self.cores))
         # Check factor shapes
         if batch:
             N = self.dim() - 1
@@ -1741,8 +1736,6 @@ class CustomTensor(object):
         :param algorithm: 'svd' (default) or 'eig'. The latter can be faster, but less accurate
         :param verbose:
         """
-        
-        print ("in round tt cores")
 
         N = self.dim()
         if not hasattr(rmax, '__len__'):
@@ -1759,9 +1752,6 @@ class CustomTensor(object):
         else:
             delta = eps / max(1, torch.sqrt(torch.tensor([N - 1], dtype=torch.float64, device=self.cores[-1].device))) * torch.norm(self.cores[-1])
             delta = delta.item()
-            
-        for elem in self.cores:
-            print (elem.shape)
 
         for mu in range(N - 1, 0, -1):
             M = tn.right_unfolding(self.cores[mu], batch=self.batch)
